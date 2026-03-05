@@ -1,0 +1,23 @@
+/**
+ * Payment Gateway & Treasury DPO2U
+ * Ponto de entrada para depósitos escrow de Empresas e liberação fiduciária
+ */
+pragma language_version >= 0.19;
+import CompactStandardLibrary;
+
+export ledger protocol_treasury: Uint<64>;
+export ledger total_staked_night: Uint<64>;
+
+export circuit depositToTreasury(amount: Uint<64>): [] {
+  assert(amount > 0, "Deposit must be greater than zero");
+  protocol_treasury = disclose(amount);
+}
+
+export circuit stakeTokens(amount: Uint<64>): [] {
+  assert(amount > 0, "Stake must be greater than zero");
+  total_staked_night = disclose(amount);
+}
+
+export circuit getTreasuryBalance(): Uint<64> {
+  return protocol_treasury;
+}

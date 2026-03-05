@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.env
+.midnight-mnemonic
+.deployed-addresses.json
+*.log
+.DS_Store
