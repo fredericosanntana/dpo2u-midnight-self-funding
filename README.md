@@ -198,6 +198,38 @@ if (recipe.balancingTransaction) {
 
 See `scripts/lib/wallet-setup.ts` for the full implementation.
 
+## Frontend (Explorer UI)
+
+A standalone React + Vite + Tailwind frontend that visualizes the deployed contracts. Reads static data from `deployed.json` — no backend, database, or wallet connection required.
+
+### Quick Start
+
+```bash
+# Generate deployment data from real contract artifacts
+npm run ui:data
+
+# Start dev server (localhost:5173)
+npm run ui:dev
+
+# Production build
+npm run ui:build
+```
+
+### Pages
+
+| Page | Route | Description |
+|------|-------|-------------|
+| Home | `/` | Protocol overview, architecture diagram, dependency matrix |
+| Contracts | `/contracts` | 3 deployed contracts with expandable source code and circuit details |
+| Dashboard | `/dashboard` | Stats grid, fee distribution chart, deployment log table |
+
+### Tech Stack
+
+- React 19 + Vite 6 + Tailwind CSS 4
+- Recharts for data visualization
+- Wouter for client-side routing
+- Cyberpunk theme (Orbitron + Share Tech Mono, neon cyan/magenta, scanlines)
+
 ## License
 
 MIT

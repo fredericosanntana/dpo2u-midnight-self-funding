@@ -11,7 +11,11 @@
     "balance": "tsx scripts/check-balance.ts",
     "test": "node --import tsx --test test/*.test.ts",
     "devnet:up": "docker compose up -d",
-    "devnet:down": "docker compose down"
+    "devnet:down": "docker compose down",
+    "ui:data": "tsx scripts/generate-ui-data.ts",
+    "ui:dev": "cd ui && npm run dev",
+    "ui:build": "cd ui && npm run build",
+    "ui:preview": "cd ui && npm run preview"
   },
   "keywords": [
     "midnightntwrk",

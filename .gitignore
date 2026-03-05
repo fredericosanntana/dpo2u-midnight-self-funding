@@ -5,3 +5,5 @@ dist/
 .deployed-addresses.json
 *.log
 .DS_Store
+ui/node_modules/
+ui/dist/

@@ -1,0 +1,125 @@
+{
+  "network": "local devnet",
+  "deployedAt": "2026-03-05",
+  "compilerVersion": "0.29.0",
+  "totalCircuits": 8,
+  "totalFees": "606240000003",
+  "contracts": [
+    {
+      "name": "ComplianceRegistry",
+      "address": "88b021db5e37519a0bd89e828bd0ea98f535e701c480c082566ffc9599d948fc",
+      "txHash": "88b021db5e37519a0bd89e828bd0ea98f535e701c480c082566ffc9599d948fc",
+      "blockHeight": 789,
+      "fees": "202120000001",
+      "status": "SucceedEntirely",
+      "compilerVersion": "0.29.0",
+      "languageVersion": "0.21.0",
+      "runtimeVersion": "0.14.0",
+      "source": "/**\n * Contrato de Registro de Conformidade DPO2U (Arquitetura Compact/Midnight)\n * Focado na privacidade e preservação de dados:\n * Nunca registrar dados sensiveis. Apenas hashes de docs (CID), DIDs de agentes responsaveis e o score zk final.\n */\npragma language_version >= 0.19;\nimport CompactStandardLibrary;\n\nexport ledger attestation_scores: Map<Bytes<32>, Uint<64>>;\nexport ledger attestation_dids: Map<Bytes<32>, Bytes<32>>;\nexport ledger attestation_cids: Map<Bytes<32>, Bytes<32>>;\n\nexport ledger attestation_score: Uint<64>;\n\nexport circuit registerAttestation(\n  company_id: Bytes<32>,\n  agent_did: Bytes<32>,\n  policy_cid: Bytes<32>,\n  score: Uint<64>\n): [] {\n  assert(score <= 100, \"Invalid compliance score, must be bounded to 0-100%\");\n  \n  // Update global ledger state\n  attestation_scores.insert(disclose(company_id), disclose(score));\n  attestation_dids.insert(disclose(company_id), disclose(agent_did));\n  attestation_cids.insert(disclose(company_id), disclose(policy_cid));\n  \n  // Also store the latest global score for simpler testing queries\n  attestation_score = disclose(score);\n}\n\nexport circuit getComplianceStatus(company_id: Bytes<32>): Uint<64> {\n  return attestation_score;\n}\n\n",
+      "circuits": [
+        {
+          "name": "registerAttestation",
+          "pure": false,
+          "proof": true,
+          "args": [
+            "company_id: Bytes<32>",
+            "agent_did: Bytes<32>",
+            "policy_cid: Bytes<32>",
+            "score: Uint<64>"
+          ],
+          "returns": "[]"
+        },
+        {
+          "name": "getComplianceStatus",
+          "pure": false,
+          "proof": true,
+          "args": [
+            "company_id: Bytes<32>"
+          ],
+          "returns": "Uint<64>"
+        }
+      ]
+    },
+    {
+      "name": "PaymentGateway",
+      "address": "1ee3bddd26a417b6bae6e6e15caebd9f63fef29c36347b59439562da3c5e584b",
+      "txHash": "1ee3bddd26a417b6bae6e6e15caebd9f63fef29c36347b59439562da3c5e584b",
+      "blockHeight": 785,
+      "fees": "198450000001",
+      "status": "SucceedEntirely",
+      "compilerVersion": "0.29.0",
+      "languageVersion": "0.21.0",
+      "runtimeVersion": "0.14.0",
+      "source": "/**\n * Payment Gateway & Treasury DPO2U\n * Ponto de entrada para depósitos escrow de Empresas e liberação fiduciária\n */\npragma language_version >= 0.19;\nimport CompactStandardLibrary;\n\nexport ledger protocol_treasury: Uint<64>;\nexport ledger total_staked_night: Uint<64>;\n\nexport circuit depositToTreasury(amount: Uint<64>): [] {\n  assert(amount > 0, \"Deposit must be greater than zero\");\n  protocol_treasury = disclose(amount);\n}\n\nexport circuit stakeTokens(amount: Uint<64>): [] {\n  assert(amount > 0, \"Stake must be greater than zero\");\n  total_staked_night = disclose(amount);\n}\n\nexport circuit getTreasuryBalance(): Uint<64> {\n  return protocol_treasury;\n}\n",
+      "circuits": [
+        {
+          "name": "depositToTreasury",
+          "pure": false,
+          "proof": true,
+          "args": [
+            "amount: Uint<64>"
+          ],
+          "returns": "[]"
+        },
+        {
+          "name": "stakeTokens",
+          "pure": false,
+          "proof": true,
+          "args": [
+            "amount: Uint<64>"
+          ],
+          "returns": "[]"
+        },
+        {
+          "name": "getTreasuryBalance",
+          "pure": false,
+          "proof": true,
+          "args": [],
+          "returns": "Uint<64>"
+        }
+      ]
+    },
+    {
+      "name": "FeeDistributor",
+      "address": "1aa2c7475ade1d578904c19cda6c13bfd0a114e48e6ff444886bb8a94128eaea",
+      "txHash": "1aa2c7475ade1d578904c19cda6c13bfd0a114e48e6ff444886bb8a94128eaea",
+      "blockHeight": 787,
+      "fees": "205670000001",
+      "status": "SucceedEntirely",
+      "compilerVersion": "0.29.0",
+      "languageVersion": "0.21.0",
+      "runtimeVersion": "0.14.0",
+      "source": "/**\n * Fee Distributor DPO2U (Arquitetura Compact/Midnight)\n * Responsável por orquestrar repasses de valores do Protocolo B2B para $NIGHT (Self-Funding).\n * Split 40/60: expert_share + auditor_share são computados off-chain e validados on-chain.\n * O contrato verifica que expert_share + auditor_share == total_amount (constraint ZK).\n */\npragma language_version >= 0.19;\nimport CompactStandardLibrary;\n\nexport ledger expert_fee_pool: Uint<64>;\nexport ledger auditor_fee_pool: Uint<64>;\n\nexport circuit distributeComplianceFee(\n  company_id: Bytes<32>,\n  expert_agent_did: Bytes<32>,\n  auditor_agent_did: Bytes<32>,\n  total_amount: Uint<64>,\n  expert_share: Uint<64>,\n  auditor_share: Uint<64>\n): [] {\n  assert(total_amount > 0, \"Fee must be greater than zero\");\n  // ZK constraint: shares must sum to total (40/60 split enforced off-chain)\n  assert(expert_share + auditor_share == total_amount, \"Shares must sum to total amount\");\n\n  expert_fee_pool = disclose(expert_share);\n  auditor_fee_pool = disclose(auditor_share);\n}\n\nexport circuit getAuditorPools(): Uint<64> {\n  return auditor_fee_pool;\n}\n\nexport circuit getExpertPools(): Uint<64> {\n  return expert_fee_pool;\n}\n",
+      "circuits": [
+        {
+          "name": "distributeComplianceFee",
+          "pure": false,
+          "proof": true,
+          "args": [
+            "company_id: Bytes<32>",
+            "expert_agent_did: Bytes<32>",
+            "auditor_agent_did: Bytes<32>",
+            "total_amount: Uint<64>",
+            "expert_share: Uint<64>",
+            "auditor_share: Uint<64>"
+          ],
+          "returns": "[]"
+        },
+        {
+          "name": "getAuditorPools",
+          "pure": false,
+          "proof": true,
+          "args": [],
+          "returns": "Uint<64>"
+        },
+        {
+          "name": "getExpertPools",
+          "pure": false,
+          "proof": true,
+          "args": [],
+          "returns": "Uint<64>"
+        }
+      ]
+    }
+  ]
+}
