@@ -151,8 +151,8 @@ function signTransactionIntents(
     }
 }
 
-export function buildProviders(ctx: WalletContext) {
-    const zkConfigProvider = new NodeZkConfigProvider();
+export function buildProviders(ctx: WalletContext, buildDir?: string) {
+    const zkConfigProvider = new NodeZkConfigProvider(buildDir);
 
     const publicDataProvider = indexerPublicDataProvider(INDEXER_HTTP, INDEXER_WS);
 

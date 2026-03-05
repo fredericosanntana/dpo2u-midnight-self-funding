@@ -4,7 +4,7 @@ import { pipe } from 'effect';
 import { CompiledContract } from '@midnight-ntwrk/compact-js';
 import { deployContract } from '@midnight-ntwrk/midnight-js-contracts';
 import { setNetworkId } from '@midnight-ntwrk/midnight-js-network-id';
-import { setupWallet, buildProviders } from './lib/wallet-setup.js';
+import { setupWallet, buildProviders, type WalletContext } from './lib/wallet-setup.js';
 import type { DeployedAddresses } from '../src/types.js';
 
 const ADDRESS_FILE = path.join(process.cwd(), '.deployed-addresses.json');
@@ -25,12 +25,15 @@ const NETWORK_ID = networkArg === 'local' ? 'undeployed' : networkArg;
 
 async function deployOne(
   name: string,
-  providers: ReturnType<typeof buildProviders>,
+  ctx: WalletContext,
 ): Promise<string> {
   console.log(`\n  Deploying ${name}...`);
 
   const buildDir = path.resolve(process.cwd(), 'compact', 'build', CONTRACT_BUILDS[name]);
   const { Contract } = await import(`../compact/build/${CONTRACT_BUILDS[name]}/contract/index.js`);
+
+  // Each contract needs providers with its own ZK config (keys are per-contract)
+  const providers = buildProviders(ctx, buildDir);
 
   const compiledContract = pipe(
     CompiledContract.make(name, Contract as any),
@@ -42,10 +45,15 @@ async function deployOne(
     compiledContract: compiledContract as any,
   });
 
-  const addr = String(deployed.deployTxData.contractAddress);
+  // deployTxData has { private, public } structure
+  const txData = (deployed.deployTxData as any).public || deployed.deployTxData;
+  const addr = String(txData.contractAddress);
   console.log(`  ${name} deployed at: ${addr}`);
-  console.log(`    TX Hash: ${deployed.deployTxData.txHash}`);
-  console.log(`    Block:   ${deployed.deployTxData.blockHeight}`);
+  console.log(`    TX Hash: ${txData.txHash}`);
+  console.log(`    TX ID:   ${txData.txId}`);
+  console.log(`    Block:   ${txData.blockHeight}`);
+  console.log(`    Status:  ${txData.status}`);
+  console.log(`    Fees:    ${txData.fees?.paidFees || 'N/A'}`);
 
   return addr;
 }
@@ -56,21 +64,18 @@ async function main() {
 
   setNetworkId(NETWORK_ID);
 
-  console.log('[1/4] Setting up wallet...');
+  console.log('[1/3] Setting up wallet...');
   const ctx = await setupWallet();
 
-  console.log('[2/4] Building providers...');
-  const providers = buildProviders(ctx);
-
-  console.log('[3/4] Deploying contracts sequentially...');
+  console.log('[2/3] Deploying contracts sequentially...');
   const addresses: DeployedAddresses = {};
 
   // Deploy order: ComplianceRegistry → PaymentGateway → FeeDistributor
-  addresses.ComplianceRegistry = await deployOne('ComplianceRegistry', providers);
-  addresses.PaymentGateway = await deployOne('PaymentGateway', providers);
-  addresses.FeeDistributor = await deployOne('FeeDistributor', providers);
+  addresses.ComplianceRegistry = await deployOne('ComplianceRegistry', ctx);
+  addresses.PaymentGateway = await deployOne('PaymentGateway', ctx);
+  addresses.FeeDistributor = await deployOne('FeeDistributor', ctx);
 
-  console.log('\n[4/4] Saving addresses...');
+  console.log('\n[3/3] Saving addresses...');
   fs.writeFileSync(ADDRESS_FILE, JSON.stringify(addresses, null, 2), 'utf-8');
   console.log(`  Addresses saved to ${ADDRESS_FILE}`);
 

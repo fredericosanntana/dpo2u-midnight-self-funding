@@ -44,6 +44,36 @@ Client pays $NIGHT          Protocol splits fees         Agent registers ZK proo
 4. **Compliance/LGPD use case** — ZK proofs applied to regulatory privacy (LGPD/GDPR)
 5. **Agent DID integration** — Decentralized identities as `Bytes<32>` in ZK circuits
 
+## Deploy Evidence (Local Devnet)
+
+All 3 contracts deployed successfully on local devnet (`midnight-node:0.20.1` + `indexer:3.0.0`):
+
+```
+Network: undeployed (local devnet)
+Genesis seed: 0x...0001
+
+ComplianceRegistry
+  Address: 88b021db5e37519a0bd89e828bd0ea98f535e701c480c082566ffc9599d948fc
+  TX Hash: 65f098a2add45aa4baf3940c2065783ca695debd88440f590ab1d716ebf5cd51
+  Block:   789
+  Status:  SucceedEntirely
+  Fees:    202120000001
+
+PaymentGateway
+  Address: 1ee3bddd26a417b6bae6e6e15caebd9f63fef29c36347b59439562da3c5e584b
+  TX Hash: 73616ab971a264a883840b3c1e3af83b0260a06b5ed5e73bd5d54d3e530bf717
+  Block:   792
+  Status:  SucceedEntirely
+  Fees:    237400000001
+
+FeeDistributor
+  Address: 1aa2c7475ade1d578904c19cda6c13bfd0a114e48e6ff444886bb8a94128eaea
+  TX Hash: 056842ea6cf6461e598462ebd6d2722d172ed1b7a0d8b879782a5b148ea851d9
+  Block:   795
+  Status:  SucceedEntirely
+  Fees:    237640000001
+```
+
 ## Quick Start
 
 ### Prerequisites
@@ -74,8 +104,9 @@ Tests validate all 3 contracts using `@midnight-ntwrk/compact-runtime` locally:
 # Start local Midnight node + indexer
 npm run devnet:up
 
-# Deploy all 3 contracts
-npm run deploy:local
+# Deploy all 3 contracts (uses genesis seed 0x...0001)
+MIDNIGHT_RAW_SEED=0000000000000000000000000000000000000000000000000000000000000001 \
+  npm run deploy:local
 
 # Run E2E demo flow
 npm run demo
