@@ -1,10 +1,11 @@
 import { Link, useLocation } from "wouter";
-import { Activity, Code2, Home } from "lucide-react";
+import { Activity, Code2, Home, Shield } from "lucide-react";
 
 const navItems = [
   { href: "/", label: "HOME", icon: Home },
   { href: "/contracts", label: "CONTRACTS", icon: Code2 },
   { href: "/dashboard", label: "DASHBOARD", icon: Activity },
+  { href: "/lgpd-kit", label: "LGPD KIT", icon: Shield },
 ];
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -36,11 +37,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 font-mono text-xs tracking-widest uppercase no-underline transition-colors ${
-                    isActive
+                  className={`flex items-center gap-1.5 px-3 py-1.5 font-mono text-xs tracking-widest uppercase no-underline transition-colors ${isActive
                       ? "text-[oklch(0.82_0.18_195)] border-b-2 border-[oklch(0.82_0.18_195)]"
                       : "text-[oklch(0.5_0_0)] hover:text-[oklch(0.82_0.18_195/0.7)]"
-                  }`}
+                    }`}
                 >
                   <item.icon className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">{item.label}</span>

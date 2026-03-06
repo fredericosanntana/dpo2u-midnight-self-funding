@@ -3,6 +3,7 @@ import Layout from "./components/Layout.tsx";
 import Home from "./pages/Home.tsx";
 import Contracts from "./pages/Contracts.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
+import LgpdKit from "./pages/LgpdKit.tsx";
 
 export default function App() {
   return (
@@ -11,6 +12,7 @@ export default function App() {
         <Route path="/" component={Home} />
         <Route path="/contracts" component={Contracts} />
         <Route path="/dashboard" component={Dashboard} />
+        <Route path="/lgpd-kit" component={LgpdKit} />
         <Route>
           <div className="min-h-screen flex items-center justify-center">
             <div className="text-center">
